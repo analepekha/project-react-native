@@ -1,5 +1,8 @@
-import React, { useState } from "react";
-import * as Font from "expo-font";
+import React, { useState, useCallback } from "react";
+import { useFonts } from "expo-font";
+import * as SplashScreen from "expo-splash-screen";
+import * as ImagePicker from "expo-image-picker";
+import { AntDesign } from "@expo/vector-icons";
 import {
   StyleSheet,
   ImageBackground,
@@ -11,23 +14,36 @@ import {
   Platform,
   KeyboardAvoidingView,
   Keyboard,
-  Button,
   TouchableWithoutFeedback,
 } from "react-native";
-
-// import { KeyboardAvoidingWrapper } from "../componets/KeyboardAvodingWrapper";
-
-const bg_image = require("../assets/images/bg-image.png");
 
 const initialState = {
   login: "",
   email: "",
   password: "",
+  avatar: null,
 };
+
+SplashScreen.preventAutoHideAsync();
 
 export default function RegistationScreen() {
   const [isShowKeyboard, setIsShowKeyboard] = useState(false);
   const [state, setState] = useState(initialState);
+
+  const [fontsLoaded] = useFonts({
+    "Roboto-Bold": require("../assets/fonts/Roboto-Bold.ttf"),
+    "Roboto-Regular": require("../assets/fonts/Roboto-Regular.ttf"),
+  });
+
+  const onLayoutRootView = useCallback(async () => {
+    if (fontsLoaded) {
+      await SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
+
+  if (!fontsLoaded) {
+    return null;
+  }
 
   const keyboardHide = () => {
     setIsShowKeyboard(false);
@@ -36,13 +52,32 @@ export default function RegistationScreen() {
     console.log(state);
   };
 
+  const addAvatar = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    console.log(result);
+
+    if (!result.canceled) {
+      setState((prevState) => ({ ...prevState, avatar: result.assets[0].uri }));
+    }
+  };
+
+  const removeAvatar = () => {
+    setState((prevState) => ({ ...prevState, avatar: null }));
+  };
+
   return (
-    // <KeyboardAvoidingWrapper
-    //   behavior={Platform.OS == "ios" ? "padding" : "height"}
-    // >
     <TouchableWithoutFeedback onPress={keyboardHide}>
-      <View style={styles.container}>
-        <ImageBackground source={bg_image} style={styles.image}>
+      <View style={styles.container} onLayout={onLayoutRootView}>
+        <ImageBackground
+          source={require("../assets/images/bg-image.png")}
+          style={styles.image}
+        >
           <KeyboardAvoidingView
             behavior={Platform.OS == "ios" ? "padding" : "height"}
           >
@@ -52,20 +87,39 @@ export default function RegistationScreen() {
                 paddingBottom: isShowKeyboard ? 10 : 66,
               }}
             >
-              {/* <View style={styles.avatar}>
-              <Image
-                source={require("../assets/images/add.png")}
-                style={styles.add_image}
-              ></Image>
-            </View> */}
+              <View style={styles.avatar}>
+                {state.avatar && (
+                  <Image
+                    source={{ uri: state.avatar }}
+                    style={{ width: 120, height: 120, borderRadius: 16 }}
+                  />
+                )}
+                {state.avatar ? (
+                  <TouchableOpacity
+                    style={styles.avatarBtn}
+                    onPress={removeAvatar}
+                    activeOpacity={0.5}
+                  >
+                    <AntDesign name="closecircleo" size={24} color="#E8E8E8" />
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity
+                    style={styles.avatarBtn}
+                    onPress={addAvatar}
+                    activeOpacity={0.5}
+                  >
+                    <AntDesign name="pluscircleo" size={24} color="#FF6C00" />
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              <Text style={styles.mainText}>Регистрация</Text>
               <View
                 style={{
                   ...styles.form,
                   marginBottom: isShowKeyboard ? 32 : 43,
                 }}
               >
-                <Text style={styles.mainText}>Регистрация</Text>
-
                 <TextInput
                   style={styles.input}
                   placeholder="Логин"
@@ -98,21 +152,12 @@ export default function RegistationScreen() {
                       }))
                     }
                   />
-                  <TouchableOpacity
-                    style={styles.showButton}
-                    // onPress={() => {
-                    //   setSecureText((prevState) => !prevState);
-                    // }}
-                  >
+                  <TouchableOpacity style={styles.showButton}>
                     <Text>Показать</Text>
-                    {/* {secureText ? (
-                    <Text style={styles.passwordInput}>Show</Text>
-                  ) : (
-                    <Text style={styles.passwordInput}>Hide</Text>
-                  )} */}
                   </TouchableOpacity>
                 </View>
               </View>
+
               <View>
                 <TouchableOpacity style={styles.button} onPress={keyboardHide}>
                   <Text style={styles.btnText}>Зарегистрироваться</Text>
@@ -121,14 +166,10 @@ export default function RegistationScreen() {
                 <TouchableOpacity
                   style={{
                     ...styles.link,
-                    // marginBottom: isShowKeyboard ? 66 : 10,
+                    // marginBottom: isShowKeyboard ? 10 : 66,
                   }}
                 >
-                  <Button
-                    // onPress={() => navigation.navigate("Login")}
-                    title="Уже есть аккаунт? Войти"
-                    style={styles.txtLink}
-                  />
+                  <Text style={styles.txtLink}>Уже есть аккаунт? Войти</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -136,7 +177,6 @@ export default function RegistationScreen() {
         </ImageBackground>
       </View>
     </TouchableWithoutFeedback>
-    // {/* </KeyboardAvoidingWrapper> */}
   );
 }
 
@@ -147,23 +187,16 @@ const styles = StyleSheet.create({
   image: {
     flex: 1,
     resizeMode: "cover",
-    // justifyContent: "flex-start",
     justifyContent: "flex-end",
-    // alignItems: "center",
   },
   containerForm: {
-    // flex: 2,
     position: "relative",
     marginTop: "auto",
     justifyContent: "flex-end",
     backgroundColor: "#fff",
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
-    // marginLeft: 16,
-    // marginRight: 16,
-    paddingLeft: 16,
-    paddingRight: 16,
-    // marginBottom: 50,
+    paddingHorizontal: 16,
   },
   form: {
     marginBottom: 0,
@@ -172,7 +205,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: -60,
     left: "50%",
-    // transform: [{ translateY: 50 }],
     transform: [{ translateX: -50 }],
     width: 120,
     height: 120,
@@ -181,16 +213,22 @@ const styles = StyleSheet.create({
     marginLeft: "auto",
     marginRight: "auto",
   },
-  add_image: {
+  avatarBtn: {
+    display: "flex",
+    alignItems: "center",
+    alignContent: "center",
+    justifyContent: "center",
     width: 25,
+    height: 25,
     position: "absolute",
     bottom: 14,
     right: "-50%",
     transform: [{ translateX: -50 }],
+    borderRadius: "50%",
+    backgroundColor: "#fff",
   },
   mainText: {
-    // fontFamily: "Roboto-Regular",
-    fontWeight: "500",
+    fontFamily: "Roboto-Bold",
     fontSize: 30,
     lineHeight: 35,
     textAlign: "center",
@@ -200,13 +238,14 @@ const styles = StyleSheet.create({
     marginBottom: 33,
   },
   input: {
+    fontFamily: "Roboto-Regular",
     height: 50,
     borderWidth: 1,
     marginBottom: 16,
     borderColor: "#E8E8E8",
     borderRadius: 8,
     padding: 16,
-    background: "#F6F6F6",
+    backgroundColor: "#F6F6F6",
   },
   showButton: {
     position: "absolute",
@@ -218,13 +257,12 @@ const styles = StyleSheet.create({
   // },
   button: {
     backgroundColor: "#FF6C00",
-    fontWeight: 400,
-    fontSize: 16,
     borderRadius: 100,
     padding: 16,
     marginBottom: 16,
   },
   btnText: {
+    fontFamily: "Roboto-Regular",
     color: "#fff",
     textAlign: "center",
     fontSize: 16,
@@ -234,8 +272,29 @@ const styles = StyleSheet.create({
     // marginBottom: 66,
   },
   txtLink: {
+    fontFamily: "Roboto-Regular",
     color: "#1B4371",
-    fontWeight: 400,
     fontSize: 16,
   },
 });
+
+// const [dimensions, setDimensions] = useState(
+//   Dimensions.get("window").width - 16 * 2
+// );
+
+// useEffect(() => {
+//   const onChange = () => {
+//     const width = Dimensions.get("window").width - 16 * 2;
+//     setDimensions(width);
+//   };
+//   const subscription = Dimensions.addEventListener("change", onChange);
+//   return () => subscription?.remove();
+// }, []);
+
+//  {
+//    secureText ? (
+//      <Text style={styles.passwordInput}>Show</Text>
+//    ) : (
+//      <Text style={styles.passwordInput}>Hide</Text>
+//    );
+//  }
