@@ -18,21 +18,36 @@ import {
 } from "react-native";
 
 const initialState = {
-  login: "",
   email: "",
   password: "",
-  avatar: null,
 };
 
 SplashScreen.preventAutoHideAsync();
 
-export default function RegistationScreen() {
+export default function LoginScreen() {
   const [isShowKeyboard, setIsShowKeyboard] = useState(false);
   const [state, setState] = useState(initialState);
   const [isSecureEntry, setIsSecureEntry] = useState(true);
-  const [isFocusedLogin, setIsFocusedLogin] = useState(false);
   const [isFocusedEmail, setIsFocusedEmail] = useState(false);
   const [isFocusedPassword, setIsFocusedPassword] = useState(false);
+
+  const onFocusEmail = () => {
+    setIsFocusedEmail(true);
+    setIsShowKeyboard(true);
+  };
+  const onBlurEmail = () => {
+    setIsFocusedEmail(false);
+    setIsShowKeyboard(false);
+  };
+
+  const onFocusPassword = () => {
+    setIsFocusedPassword(true);
+    setIsShowKeyboard(true);
+  };
+  const onBlurEPassword = () => {
+    setIsFocusedPassword(false);
+    setIsShowKeyboard(false);
+  };
 
   const [fontsLoaded] = useFonts({
     "Roboto-Bold": require("../assets/fonts/Roboto-Bold.ttf"),
@@ -49,56 +64,11 @@ export default function RegistationScreen() {
     return null;
   }
 
-  const onFocusLogin = () => {
-    setIsFocusedLogin(true);
-    setIsShowKeyboard(true);
-  };
-  const onBlurLogin = () => {
-    setIsFocusedLogin(false);
-    setIsShowKeyboard(false);
-  };
-
-  const onFocusEmail = () => {
-    setIsFocusedEmail(true);
-    setIsShowKeyboard(true);
-  };
-  const onBlurEmail = () => {
-    setIsFocusedEmail(false);
-    setIsShowKeyboard(false);
-  };
-
-  const onFocusPassword = () => {
-    setIsFocusedPassword(true);
-    setIsShowKeyboard(true);
-  };
-  const onBlurPassword = () => {
-    setIsFocusedPassword(false);
-    setIsShowKeyboard(false);
-  };
-
   const keyboardHide = () => {
     setIsShowKeyboard(false);
     Keyboard.dismiss();
     setState(initialState);
-  };
-
-  const addAvatar = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-
-    console.log(result);
-
-    if (!result.canceled) {
-      setState((prevState) => ({ ...prevState, avatar: result.assets[0].uri }));
-    }
-  };
-
-  const removeAvatar = () => {
-    setState((prevState) => ({ ...prevState, avatar: null }));
+    console.log(state);
   };
 
   const handleSubmit = () => {
@@ -119,56 +89,16 @@ export default function RegistationScreen() {
             <View
               style={{
                 ...styles.containerForm,
-                paddingBottom: isShowKeyboard ? 10 : 66,
+                paddingBottom: isShowKeyboard ? 10 : 132,
               }}
             >
-              <View style={styles.avatar}>
-                {state.avatar && (
-                  <Image
-                    source={{ uri: state.avatar }}
-                    style={{ width: 120, height: 120, borderRadius: 16 }}
-                  />
-                )}
-                {state.avatar ? (
-                  <TouchableOpacity
-                    style={styles.avatarBtn}
-                    onPress={removeAvatar}
-                    activeOpacity={0.8}
-                  >
-                    <AntDesign name="closecircleo" size={24} color="#E8E8E8" />
-                  </TouchableOpacity>
-                ) : (
-                  <TouchableOpacity
-                    style={styles.avatarBtn}
-                    onPress={addAvatar}
-                    activeOpacity={0.8}
-                  >
-                    <AntDesign name="pluscircleo" size={24} color="#FF6C00" />
-                  </TouchableOpacity>
-                )}
-              </View>
-
-              <Text style={styles.mainText}>Регистрация</Text>
+              <Text style={styles.mainText}>Войти</Text>
               <View
                 style={{
                   ...styles.form,
                   marginBottom: isShowKeyboard ? 32 : 43,
                 }}
               >
-                <TextInput
-                  style={{
-                    ...styles.input,
-                    borderColor: isFocusedLogin ? "#FF6C00" : "#E8E8E8",
-                    backgroundColor: isFocusedLogin ? "#fff" : "#F6F6F6",
-                  }}
-                  placeholder="Логин"
-                  value={state.login}
-                  onFocus={onFocusLogin}
-                  onBlur={onBlurLogin}
-                  onChangeText={(value) =>
-                    setState((prevState) => ({ ...prevState, login: value }))
-                  }
-                />
                 <TextInput
                   style={{
                     ...styles.input,
@@ -187,8 +117,6 @@ export default function RegistationScreen() {
                   <TextInput
                     style={{
                       ...styles.input,
-                      marginBottom: 0,
-                      position: "relative",
                       borderColor: isFocusedPassword ? "#FF6C00" : "#E8E8E8",
                       backgroundColor: isFocusedPassword ? "#fff" : "#F6F6F6",
                     }}
@@ -196,7 +124,7 @@ export default function RegistationScreen() {
                     placeholder="Пароль"
                     value={state.password}
                     onFocus={onFocusPassword}
-                    onBlur={onBlurPassword}
+                    onBlur={onBlurEPassword}
                     onChangeText={(value) =>
                       setState((prevState) => ({
                         ...prevState,
@@ -224,7 +152,7 @@ export default function RegistationScreen() {
                   activeOpacity={0.8}
                   onPress={handleSubmit}
                 >
-                  <Text style={styles.btnText}>Зарегистрироваться</Text>
+                  <Text style={styles.btnText}>Войти</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -234,7 +162,9 @@ export default function RegistationScreen() {
                   }}
                   activeOpacity={0.8}
                 >
-                  <Text style={styles.txtLink}>Уже есть аккаунт? Войти</Text>
+                  <Text style={styles.txtLink}>
+                    Нет аккаунта? Зарегистрироваться
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -266,32 +196,6 @@ const styles = StyleSheet.create({
   form: {
     marginBottom: 0,
   },
-  avatar: {
-    position: "absolute",
-    top: -60,
-    left: "50%",
-    transform: [{ translateX: -50 }],
-    width: 120,
-    height: 120,
-    backgroundColor: "#F6F6F6",
-    borderRadius: 16,
-    marginLeft: "auto",
-    marginRight: "auto",
-  },
-  avatarBtn: {
-    display: "flex",
-    alignItems: "center",
-    alignContent: "center",
-    justifyContent: "center",
-    width: 25,
-    height: 25,
-    position: "absolute",
-    bottom: 14,
-    right: "-50%",
-    transform: [{ translateX: -50 }],
-    borderRadius: "50%",
-    backgroundColor: "#fff",
-  },
   mainText: {
     fontFamily: "Roboto-Bold",
     fontSize: 30,
@@ -299,7 +203,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     letterSpacing: 0.01,
     color: "#212121",
-    marginTop: 92,
+    marginTop: 32,
     marginBottom: 33,
   },
   input: {
@@ -342,16 +246,3 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
-
-// const [dimensions, setDimensions] = useState(
-//   Dimensions.get("window").width - 16 * 2
-// );
-
-// useEffect(() => {
-//   const onChange = () => {
-//     const width = Dimensions.get("window").width - 16 * 2;
-//     setDimensions(width);
-//   };
-//   const subscription = Dimensions.addEventListener("change", onChange);
-//   return () => subscription?.remove();
-// }, []);
