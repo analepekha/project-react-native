@@ -26,7 +26,8 @@ const initialState = {
 
 SplashScreen.preventAutoHideAsync();
 
-export default function RegistationScreen() {
+export default function RegistrationScreen({ navigation }) {
+  console.log("navigation", navigation);
   const [isShowKeyboard, setIsShowKeyboard] = useState(false);
   const [state, setState] = useState(initialState);
   const [isSecureEntry, setIsSecureEntry] = useState(true);
@@ -233,6 +234,7 @@ export default function RegistationScreen() {
                     // marginBottom: isShowKeyboard ? 10 : 66,
                   }}
                   activeOpacity={0.8}
+                  onPress={() => navigation.navigate("LoginScreen")}
                 >
                   <Text style={styles.txtLink}>Уже есть аккаунт? Войти</Text>
                 </TouchableOpacity>
